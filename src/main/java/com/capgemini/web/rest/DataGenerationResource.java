@@ -100,8 +100,10 @@ public class DataGenerationResource {
         groupe.setDescription(description);
         groupe.setAdresse(adresse);
         groupe.setDateCreation(Instant.parse(dateCreation));
-        groupe.setPieceJointe(getBytesFromResourceByName(resourceNameDoc));
-        groupe.setPieceJointeContentType(resourceNameDocType);
+        if (resourceNameDoc != null) {
+            groupe.setPieceJointe(getBytesFromResourceByName(resourceNameDoc));
+            groupe.setPieceJointeContentType(resourceNameDocType);
+        }
         groupe.setEstSitues(lieuSet);
         groupeService.save(groupe);
         return groupe;
