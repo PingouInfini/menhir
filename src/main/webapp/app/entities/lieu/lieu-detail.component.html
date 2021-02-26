@@ -1,0 +1,38 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="lieu">
+            <h2><span jhiTranslate="menhirApp.lieu.detail.title">Lieu</span> {{ lieu.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="menhirApp.lieu.nom">Nom</span></dt>
+                <dd>
+                    <span>{{ lieu.nom }}</span>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.lieu.latitude">Latitude</span></dt>
+                <dd>
+                    <span>{{ lieu.latitude }}</span>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.lieu.longitude">Longitude</span></dt>
+                <dd>
+                    <span>{{ lieu.longitude }}</span>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/lieu', lieu.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

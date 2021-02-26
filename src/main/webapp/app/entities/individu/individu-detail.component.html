@@ -1,0 +1,61 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="individu">
+            <h2><span jhiTranslate="menhirApp.individu.detail.title">Individu</span> {{ individu.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="menhirApp.individu.nom">Nom</span></dt>
+                <dd>
+                    <span>{{ individu.nom }}</span>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.individu.taille">Taille</span></dt>
+                <dd>
+                    <span>{{ individu.taille }}</span>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.individu.dateDeNaissance">Date De Naissance</span></dt>
+                <dd>
+                    <span>{{ individu.dateDeNaissance }}</span>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.individu.couleurCheveux">Couleur Cheveux</span></dt>
+                <dd>
+                    <span jhiTranslate="{{ 'menhirApp.Couleur.' + individu.couleurCheveux }}">{{ individu.couleurCheveux }}</span>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.individu.coiffure">Coiffure</span></dt>
+                <dd>
+                    <span>{{ individu.coiffure }}</span>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.individu.photo">Photo</span></dt>
+                <dd>
+                    <div *ngIf="individu.photo">
+                        <a (click)="openFile(individu.photoContentType, individu.photo)">
+                            <img [src]="'data:' + individu.photoContentType + ';base64,' + individu.photo" style="max-width: 100%;" alt="individu image"/>
+                        </a>
+                        {{ individu.photoContentType }}, {{ byteSize(individu.photo) }}
+                    </div>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.individu.appartientA">Appartient A</span></dt>
+                <dd>
+                    <span *ngFor="let appartientA of individu.appartientAS; let last = last">
+                        <a [routerLink]="['/groupe', appartientA?.id, 'view']">{{ appartientA.nom }}</a>{{ last ? '' : ', ' }}
+                    </span>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/individu', individu.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

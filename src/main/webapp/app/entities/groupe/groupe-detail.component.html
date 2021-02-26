@@ -1,0 +1,55 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div *ngIf="groupe">
+            <h2><span jhiTranslate="menhirApp.groupe.detail.title">Groupe</span> {{ groupe.id }}</h2>
+
+            <hr>
+
+            <jhi-alert-error></jhi-alert-error>
+
+            <dl class="row-md jh-entity-details">
+                <dt><span jhiTranslate="menhirApp.groupe.nom">Nom</span></dt>
+                <dd>
+                    <span>{{ groupe.nom }}</span>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.groupe.description">Description</span></dt>
+                <dd>
+                    <span>{{ groupe.description }}</span>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.groupe.adresse">Adresse</span></dt>
+                <dd>
+                    <span>{{ groupe.adresse }}</span>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.groupe.dateCreation">Date Creation</span></dt>
+                <dd>
+                    <span>{{ groupe.dateCreation }}</span>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.groupe.pieceJointe">Piece Jointe</span></dt>
+                <dd>
+                    <div *ngIf="groupe.pieceJointe">
+                        <a (click)="openFile(groupe.pieceJointeContentType, groupe.pieceJointe)" jhiTranslate="entity.action.open">open</a>
+                        {{ groupe.pieceJointeContentType }}, {{ byteSize(groupe.pieceJointe) }}
+                    </div>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.groupe.estSitue">Est Situe</span></dt>
+                <dd>
+                    <span *ngFor="let estSitue of groupe.estSitues; let last = last">
+                        <a [routerLink]="['/lieu', estSitue?.id, 'view']">{{ estSitue.nom }}</a>{{ last ? '' : ', ' }}
+                    </span>
+                </dd>
+            </dl>
+
+            <button type="submit"
+                    (click)="previousState()"
+                    class="btn btn-info">
+                <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+            </button>
+
+            <button type="button"
+                    [routerLink]="['/groupe', groupe.id, 'edit']"
+                    class="btn btn-primary">
+                <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+            </button>
+        </div>
+    </div>
+</div>

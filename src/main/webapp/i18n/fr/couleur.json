@@ -1,0 +1,13 @@
+{
+  "menhirApp": {
+    "Couleur": {
+      "null": "",
+      "AUTRE": "AUTRE",
+      "BLANC": "BLANC",
+      "BLOND": "BLOND",
+      "BRUN": "BRUN",
+      "CHATAIN": "CHATAIN",
+      "ROUX": "ROUX"
+    }
+  }
+}

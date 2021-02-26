@@ -1,0 +1,52 @@
+{
+  "name": "Individu",
+  "fields": [
+    {
+      "fieldName": "nom",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "taille",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "dateDeNaissance",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "couleurCheveux",
+      "fieldType": "Couleur",
+      "fieldValues": "AUTRE,BLANC,BLOND,BRUN,CHATAIN,ROUX"
+    },
+    {
+      "fieldName": "coiffure",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "photo",
+      "fieldType": "byte[]",
+      "fieldTypeBlobContent": "image"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipType": "many-to-many",
+      "otherEntityName": "groupe",
+      "otherEntityRelationshipName": "individu",
+      "relationshipName": "appartientA",
+      "otherEntityField": "nom",
+      "ownerSide": true
+    }
+  ],
+  "changelogDate": "20210226154341",
+  "entityTableName": "individu",
+  "dto": "no",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "",
+  "applications": "*"
+}

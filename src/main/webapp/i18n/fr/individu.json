@@ -1,0 +1,28 @@
+{
+  "menhirApp": {
+    "individu": {
+      "home": {
+        "title": "Individus",
+        "createLabel": "Créer un nouveau Individu",
+        "createOrEditLabel": "Créer ou éditer un Individu",
+        "notFound": "Aucun Individu trouvé"
+      },
+      "created": "Un nouveau Individu a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Individu avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Individu avec l'identifiant {{ param }} a été supprimé",
+      "delete": {
+        "question": "Etes-vous certain de vouloir supprimer le Individu {{ id }} ?"
+      },
+      "detail": {
+        "title": "Individu"
+      },
+      "nom": "Nom",
+      "taille": "Taille",
+      "dateDeNaissance": "Date De Naissance",
+      "couleurCheveux": "Couleur Cheveux",
+      "coiffure": "Coiffure",
+      "photo": "Photo",
+      "appartientA": "Appartient A"
+    }
+  }
+}

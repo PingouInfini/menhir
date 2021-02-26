@@ -1,0 +1,77 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+            <h2 id="jhi-groupe-heading" jhiTranslate="menhirApp.groupe.home.createOrEditLabel">Create or edit a Groupe</h2>
+
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+
+                <div class="form-group" [hidden]="!editForm.get('id')!.value">
+                    <label for="id" jhiTranslate="global.field.id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id" formControlName="id" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="menhirApp.groupe.nom" for="field_nom">Nom</label>
+                    <input type="text" class="form-control" name="nom" id="field_nom"
+                           formControlName="nom"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="menhirApp.groupe.description" for="field_description">Description</label>
+                    <input type="text" class="form-control" name="description" id="field_description"
+                           formControlName="description"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="menhirApp.groupe.adresse" for="field_adresse">Adresse</label>
+                    <input type="text" class="form-control" name="adresse" id="field_adresse"
+                           formControlName="adresse"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="menhirApp.groupe.dateCreation" for="field_dateCreation">Date Creation</label>
+                    <div class="d-flex">
+                        <input id="field_dateCreation" type="datetime-local" class="form-control" name="dateCreation" formControlName="dateCreation" placeholder="YYYY-MM-DD HH:mm"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" jhiTranslate="menhirApp.groupe.pieceJointe" for="field_pieceJointe">Piece Jointe</label>
+                    <div>
+                        <div *ngIf="editForm.get('pieceJointe')!.value" class="form-text text-danger clearfix">
+                            <a class="pull-left" (click)="openFile(editForm.get('pieceJointeContentType')!.value, editForm.get('pieceJointe')!.value)" jhiTranslate="entity.action.open">open</a><br>
+                            <span class="pull-left">{{ editForm.get('pieceJointeContentType')!.value }}, {{ byteSize(editForm.get('pieceJointe')!.value) }}</span>
+                            <button type="button" (click)="editForm.patchValue({pieceJointe: null});editForm.patchValue({pieceJointeContentType: null});"
+                                    class="btn btn-secondary btn-xs pull-right">
+                                <fa-icon icon="times"></fa-icon>
+                            </button>
+                        </div>
+                        <input type="file" id="file_pieceJointe" (change)="setFileData($event, 'pieceJointe', false)" jhiTranslate="entity.action.addblob"/>
+                    </div>
+                    <input type="hidden" class="form-control" name="pieceJointe" id="field_pieceJointe"
+                           formControlName="pieceJointe"/>
+                    <input type="hidden" class="form-control" name="pieceJointeContentType" id="field_pieceJointeContentType"
+                           formControlName="pieceJointeContentType" />
+                </div>
+
+                <div class="form-group">
+                    <label jhiTranslate="menhirApp.groupe.estSitue" for="field_estSitues">Est Situe</label>
+                    <select class="form-control" id="field_estSitues" multiple name="estSitues" formControlName="estSitues">
+                        <option [ngValue]="getSelected(editForm.get('estSitues')!.value, lieuOption)" *ngFor="let lieuOption of lieus; trackBy: trackById">{{ lieuOption.nom }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary" (click)="previousState()">
+                    <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                </button>
+
+                <button type="submit" id="save-entity" [disabled]="editForm.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
