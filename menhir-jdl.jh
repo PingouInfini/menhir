@@ -1,0 +1,37 @@
+entity Individu {
+    nom String,
+    taille Integer,
+    dateDeNaissance Instant,
+    couleurCheveux String, 
+    coiffure String, 
+    photo ImageBlob
+}
+
+entity Groupe {
+    nom String,
+    description String,
+    adresse String,
+    dateCreation Instant,
+    pieceJointe TextBlob
+}
+
+entity Lieu {
+    nom String
+}
+
+relationship ManyToMany {
+    Individu{appartientA(nom)} to Groupe{individu}
+}
+
+relationship ManyToMany {
+    Groupe{estSitue(nom)} to Lieu{groupe}
+}
+
+// Set pagination options
+paginate Individu, Groupe, Lieu with pagination
+
+// Use Data Transfer Objects (DTO)
+// dto * with mapstruct
+
+// Set service options to all except few
+service all with serviceImpl

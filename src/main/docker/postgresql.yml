@@ -1,0 +1,12 @@
+version: '2'
+services:
+  menhir-postgresql:
+    image: postgres:12.3
+    # volumes:
+    #     - ~/volumes/jhipster/Menhir/postgresql/:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=Menhir
+      - POSTGRES_PASSWORD=
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - 5432:5432
