@@ -49,15 +49,16 @@ public class DataGenerationResource {
     public ResponseEntity<String> getRegenerateData() {
         log.debug("REST request to generate DATAs");
 
-        for(Lieu l : lieuService.findAll(PageRequest.of(0, 1000))) {
-            lieuService.delete(l.getId());
+        for (Individu i : individuService.findAll(PageRequest.of(0, 1000))) {
+            individuService.delete(i.getId());
         }
-        for(Groupe g : groupeService.findAll(PageRequest.of(0, 1000))) {
+        for (Groupe g : groupeService.findAll(PageRequest.of(0, 1000))) {
             groupeService.delete(g.getId());
         }
-        for(Individu i : individuService.findAll(PageRequest.of(0, 1000))) {
-            lieuService.delete(i.getId());
+        for (Lieu l : lieuService.findAll(PageRequest.of(0, 1000))) {
+            lieuService.delete(l.getId());
         }
+
 
         Lieu village = new Lieu();
         village.setNom("Village Gaulois");
@@ -78,17 +79,17 @@ public class DataGenerationResource {
         Groupe bagarreurs = createAndSaveNewIGroupe("Les bagarreurs", "Ils adorent se taper dessus", null,
             "1995-05-23T23:59:59Z", "document/bagarre.html", "text/html", new HashSet<>(Arrays.asList(village, lutece)));
 
-        createAndSaveNewIndividu("Asterix", 1.35, "1958-02-26T09:10:00Z", Couleur.BLOND, "Casque ailé", "images/asterix1.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
+        createAndSaveNewIndividu("Asterix", 1.35, "1958-02-26T09:10:00Z", Couleur.BLOND, "Casque ailé", "images/asterix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
         createAndSaveNewIndividu("Obelix", 1.93, "1212-12-12T12:12:12Z", Couleur.ROUX, "Casque", "images/obelix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
         createAndSaveNewIndividu("Idefix", null, null, Couleur.BLANC, null, "images/idefix.png", "image/png", null);
         createAndSaveNewIndividu("Abraracourcix", null, null, Couleur.ROUX, null, "images/abraracourcix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
-        createAndSaveNewIndividu("Agecanonix", 0.73, "1052-06-06T12:34:56Z", Couleur.BLANC, null, "agecanonix.png", "image/png", new HashSet<>(Arrays.asList(bagarreurs, perso2nd)));
-        createAndSaveNewIndividu("Assurancetourix", null, "1212-12-12T12:12:12Z", Couleur.BLOND, null, "assurancetourix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
-        createAndSaveNewIndividu("Bonemine", 1.66, null, Couleur.BLOND, null, "bonemine.png", "image/png", null);
-        createAndSaveNewIndividu("Cétautomatix", null, "1212-12-12T12:12:12Z", Couleur.BLOND, "Casque", "cétautomatix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
-        createAndSaveNewIndividu("Falbala", 1.85, "1212-12-12T12:12:12Z", Couleur.BLOND, null, "falbala.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, perso2nd)));
-        createAndSaveNewIndividu("Ordralfabétix", null, null, Couleur.BLOND, "Casque", "ordralfabétix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs, perso2nd)));
-        createAndSaveNewIndividu("Panoramix", 1.88, null, Couleur.BLANC, null, "panoramix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
+        createAndSaveNewIndividu("Agecanonix", 0.73, "1052-06-06T12:34:56Z", Couleur.BLANC, null, "images/agecanonix.png", "image/png", new HashSet<>(Arrays.asList(bagarreurs, perso2nd)));
+        createAndSaveNewIndividu("Assurancetourix", null, "1212-12-12T12:12:12Z", Couleur.BLOND, null, "images/assurancetourix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
+        createAndSaveNewIndividu("Bonemine", 1.66, null, Couleur.BLOND, null, "images/bonemine.png", "image/png", null);
+        createAndSaveNewIndividu("Cétautomatix", null, "1212-12-12T12:12:12Z", Couleur.BLOND, "Casque", "images/cetautomatix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
+        createAndSaveNewIndividu("Falbala", 1.85, "1212-12-12T12:12:12Z", Couleur.BLOND, null, "images/falbala.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, perso2nd)));
+        createAndSaveNewIndividu("Ordralfabétix", null, null, Couleur.BLOND, "Casque", "images/ordralfabetix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs, perso2nd)));
+        createAndSaveNewIndividu("Panoramix", 1.88, null, Couleur.BLANC, null, "images/panoramix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
 
         return new ResponseEntity<>("Terminé avec succès ", HttpStatus.OK);
     }
@@ -111,11 +112,14 @@ public class DataGenerationResource {
         individu = new Individu();
         individu.setNom(nom);
         individu.setTaille(taille);
-        individu.setDateDeNaissance(Instant.parse(ddn));
+        if (ddn != null)
+            individu.setDateDeNaissance(Instant.parse(ddn));
         individu.setCouleurCheveux(couleurCheveux);
         individu.setCoiffure(coiffure);
-        individu.setPhoto(getBytesFromResourceByName(resourceNamePhoto));
-        individu.setPhotoContentType(resourceNamePhotoType);
+        if (resourceNamePhoto != null) {
+            individu.setPhoto(getBytesFromResourceByName(resourceNamePhoto));
+            individu.setPhotoContentType(resourceNamePhotoType);
+        }
         individu.setAppartientAS(groupeSet);
         individuService.save(individu);
         return individu;
@@ -124,11 +128,12 @@ public class DataGenerationResource {
     private byte[] getBytesFromResourceByName(String resourceName) {
         byte[] returnedValue = null;
 
-        File file = new File(getClass().getClassLoader().getResource(resourceName).getFile());
         try {
+            File file = new File(getClass().getClassLoader().getResource(resourceName).getFile());
             returnedValue = Files.readAllBytes(file.toPath());
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("Error managing file :"+resourceName);
         }
         return returnedValue;
     }
