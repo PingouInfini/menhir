@@ -22,7 +22,7 @@
                 </dd>
                 <dt><span jhiTranslate="menhirApp.groupe.dateCreation">Date Creation</span></dt>
                 <dd>
-                    <span>{{ groupe.dateCreation }}</span>
+                    <span>{{ groupe.dateCreation  | date: 'yyyy-MM-dd HH:MM:SS'}}</span>
                 </dd>
                 <dt><span jhiTranslate="menhirApp.groupe.pieceJointe">Piece Jointe</span></dt>
                 <dd>
@@ -35,6 +35,12 @@
                 <dd>
                     <span *ngFor="let estSitue of groupe.estSitues; let last = last">
                         <a [routerLink]="['/lieu', estSitue?.id, 'view']">{{ estSitue.nom }}</a>{{ last ? '' : ', ' }}
+                    </span>
+                </dd>
+                <dt><span jhiTranslate="menhirApp.groupe.individu">A pour membre</span></dt>
+                <dd>
+                    <span *ngFor="let individu of groupe.individus; let last = last">
+                        <a [routerLink]="['/individu', individu?.id, 'view']">{{ individu.nom }}</a>{{ last ? '' : ', ' }}
                     </span>
                 </dd>
             </dl>

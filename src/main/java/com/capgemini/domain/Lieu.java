@@ -36,7 +36,7 @@ public class Lieu implements Serializable {
 
     @ManyToMany(mappedBy = "estSitues")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnore
+    //@JsonIgnore
     private Set<Groupe> groupes = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

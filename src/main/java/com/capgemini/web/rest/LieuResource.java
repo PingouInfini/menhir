@@ -1,6 +1,8 @@
 package com.capgemini.web.rest;
 
+import com.capgemini.domain.Groupe;
 import com.capgemini.domain.Lieu;
+import com.capgemini.service.GroupeService;
 import com.capgemini.service.LieuService;
 import com.capgemini.web.rest.errors.BadRequestAlertException;
 
@@ -11,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,8 +23,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * REST controller for managing {@link com.capgemini.domain.Lieu}.
@@ -38,9 +43,11 @@ public class LieuResource {
     private String applicationName;
 
     private final LieuService lieuService;
+    private final GroupeService groupeService;
 
-    public LieuResource(LieuService lieuService) {
+    public LieuResource(LieuService lieuService, GroupeService groupeService) {
         this.lieuService = lieuService;
+        this.groupeService = groupeService;
     }
 
     /**
@@ -107,6 +114,20 @@ public class LieuResource {
     public ResponseEntity<Lieu> getLieu(@PathVariable Long id) {
         log.debug("REST request to get Lieu : {}", id);
         Optional<Lieu> lieu = lieuService.findOne(id);
+
+        if (lieu.isPresent()) {
+            Long lieuId = lieu.get().getId();
+            Set<Groupe> groupes = new HashSet<>();
+            for (Groupe groupe : groupeService.findAllWithEagerRelationships(PageRequest.of(0, 1000))) {
+                for (Lieu _lieu : groupe.getEstSitues()) {
+                    if (lieuId.equals(_lieu.getId()))
+                        groupes.add(groupe);
+                }
+            }
+            if (!groupes.isEmpty())
+                lieu.get().setGroupes(groupes);
+        }
+
         return ResponseUtil.wrapOrNotFound(lieu);
     }
 

@@ -54,7 +54,7 @@ public class Groupe implements Serializable {
 
     @ManyToMany(mappedBy = "appartientAS")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnore
+    //@JsonIgnore
     private Set<Individu> individus = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

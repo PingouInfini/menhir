@@ -1,7 +1,9 @@
 package com.capgemini.web.rest;
 
 import com.capgemini.domain.Groupe;
+import com.capgemini.domain.Individu;
 import com.capgemini.service.GroupeService;
+import com.capgemini.service.IndividuService;
 import com.capgemini.web.rest.errors.BadRequestAlertException;
 
 import io.github.jhipster.web.util.HeaderUtil;
@@ -11,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,8 +23,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * REST controller for managing {@link com.capgemini.domain.Groupe}.
@@ -38,9 +43,11 @@ public class GroupeResource {
     private String applicationName;
 
     private final GroupeService groupeService;
+    private final IndividuService individuService;
 
-    public GroupeResource(GroupeService groupeService) {
+    public GroupeResource(GroupeService groupeService, IndividuService individuService) {
         this.groupeService = groupeService;
+        this.individuService = individuService;
     }
 
     /**
@@ -86,7 +93,7 @@ public class GroupeResource {
     /**
      * {@code GET  /groupes} : get all the groupes.
      *
-     * @param pageable the pagination information.
+     * @param pageable  the pagination information.
      * @param eagerload flag to eager load entities from relationships (This is applicable for many-to-many).
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of groupes in body.
      */
@@ -113,6 +120,20 @@ public class GroupeResource {
     public ResponseEntity<Groupe> getGroupe(@PathVariable Long id) {
         log.debug("REST request to get Groupe : {}", id);
         Optional<Groupe> groupe = groupeService.findOne(id);
+
+        if (groupe.isPresent()) {
+            Long groupId = groupe.get().getId();
+            Set<Individu> individus = new HashSet<>();
+            for (Individu individu : individuService.findAllWithEagerRelationships(PageRequest.of(0, 1000))) {
+                for (Groupe group : individu.getAppartientAS()) {
+                    if (groupId.equals(group.getId()))
+                        individus.add(individu);
+                }
+            }
+            if (!individus.isEmpty())
+                groupe.get().setIndividus(individus);
+        }
+
         return ResponseUtil.wrapOrNotFound(groupe);
     }
 

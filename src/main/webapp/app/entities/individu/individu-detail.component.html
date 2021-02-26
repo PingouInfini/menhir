@@ -18,7 +18,7 @@
                 </dd>
                 <dt><span jhiTranslate="menhirApp.individu.dateDeNaissance">Date De Naissance</span></dt>
                 <dd>
-                    <span>{{ individu.dateDeNaissance }}</span>
+                    <span>{{ individu.dateDeNaissance | date: 'yyyy-MM-dd HH:MM:SS'}}</span>
                 </dd>
                 <dt><span jhiTranslate="menhirApp.individu.couleurCheveux">Couleur Cheveux</span></dt>
                 <dd>
