@@ -1,10 +1,14 @@
 entity Individu {
     nom String,
-    taille Integer,
+    taille Double,
     dateDeNaissance Instant,
-    couleurCheveux String, 
-    coiffure String, 
+    couleurCheveux Couleur,
+    coiffure String,
     photo ImageBlob
+}
+
+enum Couleur {
+    AUTRE, BLANC, BLOND, BRUN, CHATAIN, ROUX
 }
 
 entity Groupe {
@@ -12,11 +16,13 @@ entity Groupe {
     description String,
     adresse String,
     dateCreation Instant,
-    pieceJointe TextBlob
+    pieceJointe Blob
 }
 
 entity Lieu {
-    nom String
+    nom String,
+    latitude Double,
+    longitude Double
 }
 
 relationship ManyToMany {
