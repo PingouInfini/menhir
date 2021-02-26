@@ -7,9 +7,11 @@ import com.capgemini.domain.enumeration.Couleur;
 import com.capgemini.service.GroupeService;
 import com.capgemini.service.IndividuService;
 import com.capgemini.service.LieuService;
+import liquibase.pro.packaged.ba;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,62 +45,80 @@ public class DataGenerationResource {
         this.lieuService = lieuService;
     }
 
-    @GetMapping("/generatedatas")
-    public ResponseEntity<String> getGenerateData() {
+    @GetMapping("/regeneratedatas")
+    public ResponseEntity<String> getRegenerateData() {
         log.debug("REST request to generate DATAs");
 
-        Set<Lieu> lieuSet = new HashSet<>();
-        Lieu lieu = new Lieu();
-        lieu.setNom("Village Gaulois");
-        lieu.setLatitude(48.64759412857947);
-        lieu.setLongitude(-2.003596545829376);
-        lieuService.save(lieu);
-        lieuSet.add(lieu);
+        for(Lieu l : lieuService.findAll(PageRequest.of(0, 1000))) {
+            lieuService.delete(l.getId());
+        }
+        for(Groupe g : groupeService.findAll(PageRequest.of(0, 1000))) {
+            groupeService.delete(g.getId());
+        }
+        for(Individu i : individuService.findAll(PageRequest.of(0, 1000))) {
+            lieuService.delete(i.getId());
+        }
 
-        Set<Groupe> groupeSet = new HashSet<>();
-        Groupe groupe = new Groupe();
-        groupe.setNom("Les Irréductibles Gaulois");
-        groupe.setDescription("Un village peuplé d'irréductibles Gaulois résiste encore et toujours à l'envahisseur.");
-        groupe.setAdresse("Quelque part en Armorique");
-        groupe.setDateCreation(Instant.parse("1987-02-05T11:34:00Z"));
-        groupe.setPieceJointe(getBytesFromResourceByName("Irreductibles.pdf"));
-        groupe.setPieceJointeContentType("application/pdf");
-        groupe.setEstSitues(lieuSet);
-        groupeService.save(groupe);
-        groupeSet.add(groupe);
+        Lieu village = new Lieu();
+        village.setNom("Village Gaulois");
+        village.setLatitude(48.64759412857947);
+        village.setLongitude(-2.003596545829376);
+        lieuService.save(village);
 
-        Individu individu1 = new Individu();
-        individu1.setNom("Asterix");
-        individu1.setTaille(1.35);
-        individu1.setDateDeNaissance(Instant.parse("1958-02-26T09:10:00Z"));
-        individu1.setCouleurCheveux(Couleur.BLOND);
-        individu1.setCoiffure("Casque");
-        individu1.setPhoto(getBytesFromResourceByName("asterix1.png"));
-        individu1.setPhotoContentType("image/png");
-        individu1.setAppartientAS(groupeSet);
-        individuService.save(individu1);
+        Lieu lutece = new Lieu();
+        lutece.setNom("Lutece");
+        lutece.setLatitude(448.8569575753533);
+        lutece.setLongitude(2.3421079333023087);
+        lieuService.save(lutece);
 
-        Individu individu2 = new Individu();
-        individu2.setNom("Obelix");
-        individu2.setTaille(1.93);
-        individu2.setDateDeNaissance(Instant.parse("1212-12-12T12:12:12Z"));
-        individu2.setCouleurCheveux(Couleur.ROUX);
-        individu2.setCoiffure("Casque");
-        individu2.setPhoto(getBytesFromResourceByName("obelix.png"));
-        individu2.setPhotoContentType("image/png");
-        individu2.setAppartientAS(groupeSet);
-        individuService.save(individu2);
+        Groupe irrecductibles = createAndSaveNewIGroupe("Les Irréductibles Gaulois", "Un village peuplé d'irréductibles Gaulois résiste encore et toujours à l'envahisseur.", "Quelque part en Armorique",
+            "1987-02-05T11:34:00Z", "document/Irreductibles.pdf", "application/pdf", new HashSet<>(Arrays.asList(village)));
+        Groupe perso2nd = createAndSaveNewIGroupe("Les personnages secondaires", null, "Capitale de la Gaule",
+            "1992-03-06T12:35:08Z", "document/perso_2nd.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", new HashSet<>(Arrays.asList(lutece)));
+        Groupe bagarreurs = createAndSaveNewIGroupe("Les bagarreurs", "Ils adorent se taper dessus", null,
+            "1995-05-23T23:59:59Z", "document/bagarre.html", "text/html", new HashSet<>(Arrays.asList(village, lutece)));
 
-        Individu individu3 = new Individu();
-        individu3.setNom("Idefix");
-        individu3.setCouleurCheveux(Couleur.BLANC);
-        individu3.setPhoto(getBytesFromResourceByName("idefix.png"));
-        individu3.setPhotoContentType("image/png");
-        individu3.setAppartientAS(groupeSet);
-        individuService.save(individu3);
-
+        createAndSaveNewIndividu("Asterix", 1.35, "1958-02-26T09:10:00Z", Couleur.BLOND, "Casque ailé", "images/asterix1.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
+        createAndSaveNewIndividu("Obelix", 1.93, "1212-12-12T12:12:12Z", Couleur.ROUX, "Casque", "images/obelix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
+        createAndSaveNewIndividu("Idefix", null, null, Couleur.BLANC, null, "images/idefix.png", "image/png", null);
+        createAndSaveNewIndividu("Abraracourcix", null, null, Couleur.ROUX, null, "images/abraracourcix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
+        createAndSaveNewIndividu("Agecanonix", 0.73, "1052-06-06T12:34:56Z", Couleur.BLANC, null, "agecanonix.png", "image/png", new HashSet<>(Arrays.asList(bagarreurs, perso2nd)));
+        createAndSaveNewIndividu("Assurancetourix", null, "1212-12-12T12:12:12Z", Couleur.BLOND, null, "assurancetourix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
+        createAndSaveNewIndividu("Bonemine", 1.66, null, Couleur.BLOND, null, "bonemine.png", "image/png", null);
+        createAndSaveNewIndividu("Cétautomatix", null, "1212-12-12T12:12:12Z", Couleur.BLOND, "Casque", "cétautomatix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
+        createAndSaveNewIndividu("Falbala", 1.85, "1212-12-12T12:12:12Z", Couleur.BLOND, null, "falbala.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, perso2nd)));
+        createAndSaveNewIndividu("Ordralfabétix", null, null, Couleur.BLOND, "Casque", "ordralfabétix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs, perso2nd)));
+        createAndSaveNewIndividu("Panoramix", 1.88, null, Couleur.BLANC, null, "panoramix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
 
         return new ResponseEntity<>("Terminé avec succès ", HttpStatus.OK);
+    }
+
+    private Groupe createAndSaveNewIGroupe(String nom, String description, String adresse, String dateCreation, String resourceNameDoc, String resourceNameDocType, Set<Lieu> lieuSet) {
+        Groupe groupe = new Groupe();
+        groupe.setNom(nom);
+        groupe.setDescription(description);
+        groupe.setAdresse(adresse);
+        groupe.setDateCreation(Instant.parse(dateCreation));
+        groupe.setPieceJointe(getBytesFromResourceByName(resourceNameDoc));
+        groupe.setPieceJointeContentType(resourceNameDocType);
+        groupe.setEstSitues(lieuSet);
+        groupeService.save(groupe);
+        return groupe;
+    }
+
+    private Individu createAndSaveNewIndividu(String nom, Double taille, String ddn, Couleur couleurCheveux, String coiffure, String resourceNamePhoto, String resourceNamePhotoType, Set<Groupe> groupeSet) {
+        Individu individu;
+        individu = new Individu();
+        individu.setNom(nom);
+        individu.setTaille(taille);
+        individu.setDateDeNaissance(Instant.parse(ddn));
+        individu.setCouleurCheveux(couleurCheveux);
+        individu.setCoiffure(coiffure);
+        individu.setPhoto(getBytesFromResourceByName(resourceNamePhoto));
+        individu.setPhotoContentType(resourceNamePhotoType);
+        individu.setAppartientAS(groupeSet);
+        individuService.save(individu);
+        return individu;
     }
 
     private byte[] getBytesFromResourceByName(String resourceName) {
