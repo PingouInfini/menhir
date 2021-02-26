@@ -1,7 +1,7 @@
 version: '2'
 services:
   menhir-app:
-    image: menhir
+    image: pingouinfinihub/menhir:latest
     environment:
       - _JAVA_OPTIONS=-Xmx512m -Xms256m
       - SPRING_PROFILES_ACTIVE=prod,swagger
@@ -9,7 +9,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://menhir-postgresql:5432/Menhir
       - JHIPSTER_SLEEP=30 # gives time for other services to boot before the application
     ports:
-      - 8080:8080
+      - 18081:18080
   menhir-postgresql:
     extends:
       file: postgresql.yml
