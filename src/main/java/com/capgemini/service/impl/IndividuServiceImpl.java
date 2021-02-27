@@ -1,11 +1,11 @@
 package com.capgemini.service.impl;
 
-import com.capgemini.service.IndividuService;
+import com.capgemini.domain.Groupe;
 import com.capgemini.domain.Individu;
 import com.capgemini.repository.IndividuRepository;
+import com.capgemini.service.IndividuService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -43,7 +43,11 @@ public class IndividuServiceImpl implements IndividuService {
 
 
     public Page<Individu> findAllWithEagerRelationships(Pageable pageable) {
-        return individuRepository.findAllWithEagerRelationships(pageable);
+        Page<Individu> result = individuRepository.findAllWithEagerRelationships(pageable);
+        for (Individu individu : result.getContent())
+            for (Groupe grp : individu.getAppartientAS())
+                grp.setPieceJointe(null);
+        return result;
     }
 
     @Override
