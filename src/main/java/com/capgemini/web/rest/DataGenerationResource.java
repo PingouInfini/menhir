@@ -7,7 +7,6 @@ import com.capgemini.domain.enumeration.Couleur;
 import com.capgemini.service.GroupeService;
 import com.capgemini.service.IndividuService;
 import com.capgemini.service.LieuService;
-import liquibase.pro.packaged.ba;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Instant;
 import java.util.Arrays;
@@ -82,14 +80,14 @@ public class DataGenerationResource {
         createAndSaveNewIndividu("Asterix", 1.35, "1958-02-26T09:10:00Z", Couleur.BLOND, "Casque ailé", "images/asterix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
         createAndSaveNewIndividu("Obelix", 1.93, "1212-12-12T12:12:12Z", Couleur.ROUX, "Casque", "images/obelix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
         createAndSaveNewIndividu("Idefix", null, null, Couleur.BLANC, null, "images/idefix.png", "image/png", null);
-        createAndSaveNewIndividu("Abraracourcix", null, null, Couleur.ROUX, null, "images/abraracourcix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
-        createAndSaveNewIndividu("Agecanonix", 0.73, "1052-06-06T12:34:56Z", Couleur.BLANC, null, "images/agecanonix.png", "image/png", new HashSet<>(Arrays.asList(bagarreurs, perso2nd)));
-        createAndSaveNewIndividu("Assurancetourix", null, "1212-12-12T12:12:12Z", Couleur.BLOND, null, "images/assurancetourix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
-        createAndSaveNewIndividu("Bonemine", 1.66, null, Couleur.BLOND, null, "images/bonemine.png", "image/png", null);
-        createAndSaveNewIndividu("Cétautomatix", null, "1212-12-12T12:12:12Z", Couleur.BLOND, "Casque", "images/cetautomatix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
-        createAndSaveNewIndividu("Falbala", 1.85, "1212-12-12T12:12:12Z", Couleur.BLOND, null, "images/falbala.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, perso2nd)));
-        createAndSaveNewIndividu("Ordralfabétix", null, null, Couleur.BLOND, "Casque", "images/ordralfabetix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs, perso2nd)));
-        createAndSaveNewIndividu("Panoramix", 1.88, null, Couleur.BLANC, null, "images/panoramix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
+        createAndSaveNewIndividu("Abraracourcix", null, null, Couleur.ROUX, "Couvre-chef", "images/abraracourcix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
+        createAndSaveNewIndividu("Agecanonix", 0.73, "1052-06-06T12:34:56Z", null, null, "images/agecanonix.png", "image/png", new HashSet<>(Arrays.asList(bagarreurs, perso2nd)));
+        createAndSaveNewIndividu("Assurancetourix", null, "1111-11-11T11:11:11Z", Couleur.BLOND, null, "images/assurancetourix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
+        createAndSaveNewIndividu("Bonemine", 1.66, null, null, null, "images/bonemine.png", "image/png", null);
+        createAndSaveNewIndividu("Cétautomatix", null, "1945-06-06T17:53:41Z", Couleur.BLOND, null, "images/cetautomatix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
+        createAndSaveNewIndividu("Falbala", 1.85, "2008-02-29T00:35:00Z", Couleur.BLOND, null, "images/falbala.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, perso2nd)));
+        createAndSaveNewIndividu("Ordralfabétix", null, null, Couleur.BLOND, null, "images/ordralfabetix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs, perso2nd)));
+        createAndSaveNewIndividu("Panoramix", 1.88, null, Couleur.BLANC, "dégarni", "images/panoramix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
 
         return new ResponseEntity<>("Terminé avec succès ", HttpStatus.OK);
     }
@@ -135,7 +133,7 @@ public class DataGenerationResource {
             returnedValue = Files.readAllBytes(file.toPath());
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Error managing file :"+resourceName);
+            System.out.println("Error managing file :" + resourceName);
         }
         return returnedValue;
     }
