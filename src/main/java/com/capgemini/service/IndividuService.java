@@ -35,6 +35,8 @@ public interface IndividuService {
      */
     Page<Individu> findAllWithEagerRelationships(Pageable pageable);
 
+    Page<Individu> findAllWithEagerRelationshipsWithoutAttachment(Pageable pageable);
+
 
     /**
      * Get the "id" individu.

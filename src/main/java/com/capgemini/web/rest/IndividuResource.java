@@ -95,7 +95,7 @@ public class IndividuResource {
         log.debug("REST request to get a page of Individus");
         Page<Individu> page;
         if (eagerload) {
-            page = individuService.findAllWithEagerRelationships(pageable);
+            page = individuService.findAllWithEagerRelationshipsWithoutAttachment(pageable);
         } else {
             page = individuService.findAll(pageable);
         }

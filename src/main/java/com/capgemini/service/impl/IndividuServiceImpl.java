@@ -43,6 +43,10 @@ public class IndividuServiceImpl implements IndividuService {
 
 
     public Page<Individu> findAllWithEagerRelationships(Pageable pageable) {
+        return individuRepository.findAllWithEagerRelationships(pageable);
+    }
+
+    public Page<Individu> findAllWithEagerRelationshipsWithoutAttachment(Pageable pageable) {
         Page<Individu> result = individuRepository.findAllWithEagerRelationships(pageable);
         for (Individu individu : result.getContent())
             for (Groupe grp : individu.getAppartientAS())
