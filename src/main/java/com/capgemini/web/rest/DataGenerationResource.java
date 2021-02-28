@@ -84,9 +84,9 @@ public class DataGenerationResource {
         createAndSaveNewIndividu("Agecanonix", 0.73, "1052-06-06T12:34:56Z", null, null, "images/agecanonix.png", "image/png", new HashSet<>(Arrays.asList(bagarreurs, perso2nd)));
         createAndSaveNewIndividu("Assurancetourix", null, "1111-11-11T11:11:11Z", Couleur.BLOND, null, "images/assurancetourix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
         createAndSaveNewIndividu("Bonemine", 1.66, null, null, null, "images/bonemine.png", "image/png", null);
-        createAndSaveNewIndividu("Cétautomatix", null, "1945-06-06T17:53:41Z", Couleur.BLOND, null, "images/cetautomatix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
+        createAndSaveNewIndividu("Cetautomatix", null, "1945-06-06T17:53:41Z", Couleur.BLOND, null, "images/cetautomatix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs)));
         createAndSaveNewIndividu("Falbala", 1.85, "2008-02-29T00:35:00Z", Couleur.BLOND, null, "images/falbala.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, perso2nd)));
-        createAndSaveNewIndividu("Ordralfabétix", null, null, Couleur.BLOND, null, "images/ordralfabetix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs, perso2nd)));
+        createAndSaveNewIndividu("Ordralfabetix", null, null, Couleur.BLOND, null, "images/ordralfabetix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles, bagarreurs, perso2nd)));
         createAndSaveNewIndividu("Panoramix", 1.88, null, Couleur.BLANC, "dégarni", "images/panoramix.png", "image/png", new HashSet<>(Arrays.asList(irrecductibles)));
 
         return new ResponseEntity<>("Terminé avec succès ", HttpStatus.OK);
