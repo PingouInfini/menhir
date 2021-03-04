@@ -25,7 +25,7 @@ public class DataGenerationResource {
         this.dataGenerationService = dataGenerationService;
     }
 
-    @GetMapping("/regenerateDemoDataSet")
+    @GetMapping("/generateDemoDataSet")
     public ResponseEntity<String> getRegenerateData() {
         log.debug("REST request to generate DATAs for DEMO");
 
@@ -40,6 +40,16 @@ public class DataGenerationResource {
         log.debug("REST request to generate RANDOM DATAs");
 
         dataGenerationService.generateRandomDataSet(totalIndividuToCreate, totalGroupeToCreate, totalLieuToCreate);
+
+        return new ResponseEntity<>("Terminé avec succès ", HttpStatus.OK);
+    }
+
+
+    @GetMapping("/eraseAllDatas")
+    public ResponseEntity<String> eraseAllDatas(Boolean yesImSure) {
+        log.debug("REST request to clear DATAs");
+        if(yesImSure)
+            dataGenerationService.clearAllDatas();
 
         return new ResponseEntity<>("Terminé avec succès ", HttpStatus.OK);
     }

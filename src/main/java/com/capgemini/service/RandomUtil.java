@@ -3,6 +3,7 @@ package com.capgemini.service;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -81,7 +82,7 @@ public final class RandomUtil {
      * @return entier [valeurMin-valeurMax]
      */
     public static int generateRandomInt(final int valeurMin, final int valeurMax) {
-        return valeurMin + (int) Math.round(Math.random() * valeurMax);
+        return valeurMin + (int) Math.round(Math.random() * (valeurMax-valeurMin));
     }
 
     /**
@@ -134,6 +135,15 @@ public final class RandomUtil {
         return new Random().nextFloat() * (valeurMax - valeurMin) + valeurMin;
     }
 
+    public static double generateRandomDouble(final double valeurMin, final double valeurMax, int nbdigit) {
+        return roundAvoid((new Random().nextFloat() * (valeurMax - valeurMin) + valeurMin), nbdigit);
+    }
+
+    public static double roundAvoid(double value, int places) {
+        double scale = Math.pow(10, places);
+        return Math.round(value * scale) / scale;
+    }
+
     /**
      * Génération d'un boolean aléatoire (50% de chance de true)
      *
@@ -178,6 +188,13 @@ public final class RandomUtil {
     public static String generateRandomDateToString() {
         final TimeZone tz = TimeZone.getTimeZone("UTC");
         final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        df.setTimeZone(tz);
+        return df.format(generateRandomDate());
+    }
+
+    public static String generateRandomDateToString(String simpleDateFormat) {
+        final TimeZone tz = TimeZone.getTimeZone("UTC");
+        final DateFormat df = new SimpleDateFormat(simpleDateFormat);
         df.setTimeZone(tz);
         return df.format(generateRandomDate());
     }

@@ -40,7 +40,7 @@ public class DataGenerationServiceImpl implements DataGenerationService {
     }
 
     @Override
-    public void generateDemoDataSet() {
+    public void clearAllDatas() {
         for (Individu i : individuService.findAll(PageRequest.of(0, 1000))) {
             individuService.delete(i.getId());
         }
@@ -50,6 +50,11 @@ public class DataGenerationServiceImpl implements DataGenerationService {
         for (Lieu l : lieuService.findAll(PageRequest.of(0, 1000))) {
             lieuService.delete(l.getId());
         }
+    }
+
+    @Override
+    public void generateDemoDataSet() {
+        clearAllDatas();
 
         Lieu village = new Lieu();
         village.setNom("Village Gaulois");
@@ -85,20 +90,16 @@ public class DataGenerationServiceImpl implements DataGenerationService {
 
     @Override
     public void generateRandomDataSet(final Integer totalIndividuToCreate, final Integer totalGroupeToCreate, final Integer totalLieuToCreate) {
-        try {
-            List<Lieu> listeLieux = null;
-            List<Groupe> listeGroupes = null;
-            if (totalLieuToCreate != null && totalLieuToCreate > 0) {
-                listeLieux = generateLieu(totalLieuToCreate);
-            }
-            if (totalGroupeToCreate != null && totalGroupeToCreate > 0) {
-                listeGroupes = generateGroupe(totalGroupeToCreate, listeLieux);
-            }
-            if (totalIndividuToCreate != null && totalIndividuToCreate > 0) {
-                final List<Individu> listeIndividus = generateIndividu(totalIndividuToCreate, listeGroupes);
-            }
-        } catch (Exception e){
-            System.out.println("erreur");
+        List<Lieu> listeLieux = new ArrayList<>();
+        List<Groupe> listeGroupes = new ArrayList<>();
+        if (totalLieuToCreate != null && totalLieuToCreate > 0) {
+            listeLieux = generateLieu(totalLieuToCreate);
+        }
+        if (totalGroupeToCreate != null && totalGroupeToCreate > 0) {
+            listeGroupes = generateGroupe(totalGroupeToCreate, listeLieux);
+        }
+        if (totalIndividuToCreate != null && totalIndividuToCreate > 0) {
+            final List<Individu> listeIndividus = generateIndividu(totalIndividuToCreate, listeGroupes);
         }
     }
 
@@ -107,10 +108,24 @@ public class DataGenerationServiceImpl implements DataGenerationService {
         for (int i = 0; i < totalLieuToCreate; i++) {
             final int randomIndexLocalite = (int) Math.round(Math.random() * (this.localites.size() - 1));
 
+            Double latitude = null;
+            try {
+                latitude = Double.valueOf(this.localites.get(randomIndexLocalite)[1]);
+            } catch (Exception e1) {
+                System.out.println(e1);
+            }
+
+            Double longitude = null;
+            try {
+                longitude = Double.valueOf(this.localites.get(randomIndexLocalite)[2]);
+            } catch (Exception e2) {
+                System.out.println(e2);
+            }
+
             Lieu l = new Lieu();
             l.setNom(this.localites.get(randomIndexLocalite)[0]);
-            l.setLatitude(Double.valueOf(this.localites.get(randomIndexLocalite)[1]));
-            l.setLongitude(Double.valueOf(this.localites.get(randomIndexLocalite)[2]));
+            l.setLatitude(latitude);
+            l.setLongitude(longitude);
             lieuService.save(l);
             ret.add(l);
         }
@@ -119,25 +134,41 @@ public class DataGenerationServiceImpl implements DataGenerationService {
 
     private List<Groupe> generateGroupe(final Integer totalGroupeToCreate, final List<Lieu> listeLieux) {
         final List<Groupe> ret = new ArrayList<>();
+
+        List<String> docFiles = Arrays.asList(".pdf", ".docx", ".html");
+        List<String> docTypes = Arrays.asList("application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/html");
+
         for (int i = 0; i < totalGroupeToCreate; i++) {
-            final int randomIndexGroupe= (int) Math.round(Math.random() * (this.organisations.size() - 1));
-            final int numberOfRelation= RandomUtil.generateRandomInt(0, listeLieux.size());
+
+            final int randomIndexGroupe = (int) Math.round(Math.random() * (this.organisations.size() - 1));
+            final int numberOfRelation = RandomUtil.generateRandomInt(0, Math.min((listeLieux.size() - 1), 3));
 
             Set<Lieu> lieux = new HashSet<>();
-            for(int j = 0; j < numberOfRelation; j++) {
-                final int randomIndexLieux= RandomUtil.generateRandomInt(0, listeLieux.size());
+            for (int j = 0; j < numberOfRelation; j++) {
+                final int randomIndexLieux = RandomUtil.generateRandomInt(0, (listeLieux.size() - 1));
                 lieux.add(listeLieux.get(randomIndexLieux));
             }
 
+            boolean generateDocument = RandomUtil.generateRandomBoolean();
+            String docName = null;
+            String docContentType = null;
+            if (generateDocument) {
+                final int randomIndexDoc = RandomUtil.generateRandomInt(1, 5);
+                final int randomIndexDocType = RandomUtil.generateRandomInt(0, 2);
+                docName = "document/" + randomIndexDoc + docFiles.get(randomIndexDocType);
+                docContentType = docTypes.get(randomIndexDocType);
+            }
+
+
             Groupe g = createAndSaveNewIGroupe(
                 this.organisations.get(randomIndexGroupe)[0],
-                RandomUtil.generateRandomBoolean()?RandomUtil.generateRandomString(20): null,
-                RandomUtil.generateRandomBoolean()?RandomUtil.generateRandomString(20): null,
-                RandomUtil.generateRandomBoolean()?RandomUtil.generateRandomDateToString(): null,
-                RandomUtil.generateRandomBoolean()?"document/Irreductibles.pdf":null,
-                "application/pdf",
-                lieux.isEmpty()? null:lieux);
-
+                RandomUtil.generateRandomBoolean() ? "Description-" + RandomUtil.generateRandomString(20) : null,
+                RandomUtil.generateRandomBoolean() ? "Adresse-" + RandomUtil.generateRandomString(20) : null,
+                RandomUtil.generateRandomBoolean() ? RandomUtil.generateRandomDateToString("yyyy-MM-dd'T'HH:mm:ss'Z'") : null,
+                generateDocument ? docName : null,
+                generateDocument ? docContentType : null,
+                lieux.isEmpty() ? null : lieux);
+            groupeService.save(g);
             ret.add(g);
         }
         return ret;
@@ -150,23 +181,24 @@ public class DataGenerationServiceImpl implements DataGenerationService {
             final int randomIndexNom = (int) Math.round(Math.random() * (this.noms.size() - 1));
             final int randomIndexPrenom = (int) Math.round(Math.random() * (this.prenoms.size() - 1));
 
-            final int numberOfRelation= RandomUtil.generateRandomInt(0, listeGroupe.size());
+            final int numberOfRelation = RandomUtil.generateRandomInt(0, Math.min((listeGroupe.size() - 1), 3));
 
             Set<Groupe> groupes = new HashSet<>();
-            for(int j = 0; j < numberOfRelation; j++) {
-                final int randomIndexLieux= RandomUtil.generateRandomInt(0, listeGroupe.size());
+            for (int j = 0; j < numberOfRelation; j++) {
+                final int randomIndexLieux = RandomUtil.generateRandomInt(0, (listeGroupe.size() - 1));
                 groupes.add(listeGroupe.get(randomIndexLieux));
             }
 
-            Individu individu = createAndSaveNewIndividu(this.noms.get(randomIndexNom)[0] +" "+this.prenoms.get(randomIndexPrenom)[0],
-                RandomUtil.generateRandomBoolean()?RandomUtil.generateRandomDouble(0.70, 2.20): null,
-                RandomUtil.generateRandomBoolean()?RandomUtil.generateRandomDateToString(): null,
-                Couleur.BLOND,
-                RandomUtil.generateRandomBoolean()?RandomUtil.generateRandomString(10): null,
-                "images/"+RandomUtil.generateRandomInt(0, 99)+".png",
+            Individu individu = createAndSaveNewIndividu(this.noms.get(randomIndexNom)[0] + " " + this.prenoms.get(randomIndexPrenom)[0],
+                RandomUtil.generateRandomBoolean() ? RandomUtil.generateRandomDouble(0.70, 2.20, 2) : null,
+                RandomUtil.generateRandomBoolean() ? RandomUtil.generateRandomDateToString("yyyy-MM-dd'T'HH:mm:ss'Z'") : null,
+                RandomUtil.generateRandomBoolean() ? Couleur.randomCouleur() : null,
+                RandomUtil.generateRandomBoolean() ? "Coiffure-" + RandomUtil.generateRandomString(10) : null,
+                "images/" + RandomUtil.generateRandomInt(0, 99) + ".png",
                 "image/png",
-                groupes.isEmpty()? null:groupes);
+                groupes.isEmpty() ? null : groupes);
 
+            individuService.save(individu);
             ret.add(individu);
         }
 
@@ -179,7 +211,8 @@ public class DataGenerationServiceImpl implements DataGenerationService {
         groupe.setNom(nom);
         groupe.setDescription(description);
         groupe.setAdresse(adresse);
-        groupe.setDateCreation(Instant.parse(dateCreation));
+        if (dateCreation != null)
+            groupe.setDateCreation(Instant.parse(dateCreation));
         if (resourceNameDoc != null) {
             groupe.setPieceJointe(getBytesFromResourceByName(resourceNameDoc));
             groupe.setPieceJointeContentType(resourceNameDocType);
@@ -227,7 +260,7 @@ public class DataGenerationServiceImpl implements DataGenerationService {
     private List<String[]> extractDataFromCsvFile(final String resourceName, final String splitSeparator) throws IOException {
         final List<String[]> datas = new ArrayList<>(300000);
 
-        final InputStream inputStream = getClass().getClassLoader().getResourceAsStream("dataset/"+resourceName);
+        final InputStream inputStream = getClass().getClassLoader().getResourceAsStream("dataset/" + resourceName);
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
             String line = "";
