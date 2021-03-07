@@ -79,111 +79,250 @@ case "$response" in
 esac
 }
 
+preparation_images(){
+	mkdir -p $WORKING_DIR/images
+	rm -rf $WORKING_DIR/images/*
+	
+	cd $WORKING_DIR
+	
+	dockerImages="pingouinfinihub/menhir pingouinfinihub/alesia postgres:12.3"
+	stop_containers $dockerImages
+
+	echo ""
+	echo $(date +%H:%M:%S)   "INFO   Pull des images depuis dockerhub"
+	for img in $dockerImages; do
+		docker pull $img
+	done
+
+	echo ""
+	echo $(date +%H:%M:%S)   "INFO   Sauvegarde des images au format tar dans le répertoire $(pwd)/images"
+	for img in $dockerImages; do
+		imgNameTmp=$(echo $img| cut -d'/' -f 2)
+		imgName=$(echo $imgNameTmp| cut -d':' -f 1)
+		echo $(date +%H:%M:%S)   "DEBUG  Creation de $WORKING_DIR/images/$imgName.tar"
+		docker save -o  $WORKING_DIR/images/$imgName.tar $img
+	done
+	cd $CURRENT_PATH
+}
+
+preparation_container() {
+
+	mkdir -p $WORKING_DIR/docker
+	rm -rf $WORKING_DIR/docker/*
+	
+	NBCONTAINERS="$1"
+	echo ""
+	echo $(date +%H:%M:%S)   "INFO   Preparation des $NBCONTAINERS container(s)"
+				
+				
+	 # Preparer les yml pour lancer les BDD et les $NBCONTAINERS
+	 echo "version: '2'
+services:
+  menhir-postgresql:
+    image: postgres:12.3
+    #volumes:
+    #  - ~/volumes/jhipster/Menhir/postgresql/:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=Menhir
+      - POSTGRES_PASSWORD=
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - 5432:5432" | tee $WORKING_DIR/docker/menhir-postgresql.yml >/dev/null
+
+	echo "version: '2'
+services:
+  alesia-postgresql:
+    image: postgres:12.3
+    #volumes:
+    #  - ~/volumes/jhipster/Alesia/postgresql/:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=Alesia
+      - POSTGRES_PASSWORD=
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - 5433:5433" | tee $WORKING_DIR/docker/alesia-postgresql.yml >/dev/null
+
+	for (( nb=1; nb<=$NBCONTAINERS; nb++ ))
+	do
+		portCible=$((18080 + $nb))				 
+		echo "version: '2'
+services:
+  menhir-$nb-app:
+    image: pingouinfinihub/menhir:latest
+    environment:
+      - _JAVA_OPTIONS=-Xmx512m -Xms256m
+      - SPRING_PROFILES_ACTIVE=prod,swagger
+      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://menhir-postgresql:5432/Menhir$nb
+      - JHIPSTER_SLEEP=30 # gives time for other services to boot before the application
+    ports:
+      - $portCible:18080" | tee $WORKING_DIR/docker/menhir-$nb-app.yml >/dev/null
+	done
+	
+	for (( nb=1; nb<=$NBCONTAINERS; nb++ ))
+	do
+		portCible=$((28080 + $nb))				 
+		echo "version: '2'
+services:
+  alesia-$nb-app:
+    image: pingouinfinihub/alesia:latest
+    environment:
+      - _JAVA_OPTIONS=-Xmx512m -Xms256m
+      - SPRING_PROFILES_ACTIVE=prod,swagger
+      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://alesia-postgresql:5432/Alesia$nb
+      - JHIPSTER_SLEEP=30 # gives time for other services to boot before the application
+    ports:
+      - $portCible:28080" | tee $WORKING_DIR/docker/alesia-$nb-app.yml >/dev/null
+	done
+	
+	for (( nb=1; nb<=$NBCONTAINERS; nb++ )); do
+		echo "CREATE DATABASE \"Menhir$nb\" WITH OWNER = \"Menhir\" ENCODING = 'UTF8' TABLESPACE = pg_default CONNECTION LIMIT = -1;" | tee -a  $WORKING_DIR/docker/menhir-initdatabase.sql >/dev/null
+	done
+	
+	for (( nb=1; nb<=$NBCONTAINERS; nb++ )); do
+		echo "CREATE DATABASE \"Alesia$nb\" WITH OWNER = \"Alesia\" ENCODING = 'UTF8' TABLESPACE = pg_default CONNECTION LIMIT = -1;" | tee -a  $WORKING_DIR/docker/alesia-initdatabase.sql >/dev/null
+	done
+}
+
+launch_containers() {
+	
+	nbYml=$(ls docker/$1*app.yml | wc -l)
+	for (( i=1; i<=$nbYml; i++ )); do
+		echo $(date +%H:%M:%S)   "DEBUG  init $1-$i-app"
+		docker-compose -f docker/$1-$i-app.yml up -d
+	done
+}
+
+load_images(){
+	dockerImages="pingouinfinihub/menhir pingouinfinihub/alesia postgres:12.3"
+	
+	echo ""
+	echo $(date +%H:%M:%S)   "INFO   Load des images"
+	
+	for img in $dockerImages; do
+		docker rmi $img
+	
+		imgNameTmp=$(echo $img| cut -d'/' -f 2)
+		imgName=$(echo $imgNameTmp| cut -d':' -f 1)
+		echo $(date +%H:%M:%S)   "DEBUG  loading $WORKING_DIR/images/$imgName.tar"
+		docker load -i $WORKING_DIR/images/$imgName.tar
+	done
+}
+
+init_containers() {
+
+	echo ""
+	echo $(date +%H:%M:%S)   "INFO   Initialisation des containers"
+	echo $(date +%H:%M:%S)   "DEBUG  init menhir-postgresql"
+	docker-compose -f docker/menhir-postgresql.yml up --no-start && docker cp docker/menhir-initdatabase.sql docker_menhir-postgresql_1:/docker-entrypoint-initdb.d/menhir-initdatabase.sql && docker-compose -f docker/menhir-postgresql.yml start
+	echo $(date +%H:%M:%S)   "DEBUG  init alesia-postgresql"
+	docker-compose -f docker/alesia-postgresql.yml up --no-start && docker cp docker/alesia-initdatabase.sql docker_alesia-postgresql_1:/docker-entrypoint-initdb.d/alesia-initdatabase.sql && docker-compose -f docker/alesia-postgresql.yml start
+	
+	launch_containers menhir
+	launch_containers alesia
+}
+
+stop_containers() {
+	echo ""
+	echo $(date +%H:%M:%S)   "INFO   Arrêt et suppression des containers existants"
+	for img in $1; do
+		# si un container a ete lancer depuis une image, on l'arrete et delete le container
+		idsToDelete=$(docker ps -a -q --filter ancestor=$img --format="{{.ID}}")
+		nbmax=$(docker ps -a -q --filter ancestor=$img --format="{{.ID}}"|wc -l)
+		
+		for (( i=1; i<=$nbmax; i++ )); do
+			idToDelete=$(echo $idsToDelete| cut -d' ' -f $i)
+			docker rm $(docker stop $idToDelete)
+		done
+		docker container prune -f
+	done
+}
+
 launch_easy_install() {
 
 	HEIGHT=15
-	WIDTH=90
-	CHOICE_HEIGHT=2
+	WIDTH=150
+	CHOICE_HEIGHT=7
 
 	TITLE="Demo PESR easy deploy"
 	MENU="Choix de l action a realiser"
 
-	CHOIX=$(whiptail --title "$TITLE" --radiolist \
+	CHOIX=$(whiptail --title "$TITLE" --menu \
 	"$MENU" "$HEIGHT" "$WIDTH" "$CHOICE_HEIGHT" \
-	"01" "Preparation: Recuperer les images docker depuis dockerhub" ON \
-	"02" "Installation : Load les images docker et instancie les containers" OFF \
+	"01 Preparation" "     Recuperer les images docker depuis dockerhub et prepare les fichiers yml"  \
+	"  |_step_1-1" "     ...Recuperer les images docker "  \
+	"  |_step_1-2" "     ...Preparer les yml"  \
+	"02 Installation" "     Load les images docker et instancie les containers"  \
+	"  |_step_2-1" "     ...Load les images docker "  \
+	"  |_step_2-2" "     ...Instancier les containers"  \
+	"  |_step_2-3" "     ...Stopper les containers"  \
 	3>&1 1>&2 2>&3)
 
 	case $CHOIX in
-			*01*)
-			
+			*Preparation*)
 				NBCONTAINERS=$(whiptail --inputbox "Combien de containers seront instancies ?" 8 39 1 --title "Nb containers" 3>&1 1>&2 2>&3)
 			
-				dockerImages="pingouinfinihub/menhir pingouinfinihub/alesia"
-				mkdir -p $WORKING_DIR/images
-				rm -rf $WORKING_DIR/images/*
-				cd $WORKING_DIR
-				
+				preparation_images			
+				preparation_container $NBCONTAINERS
+	
 				echo ""
-				echo $(date +%H:%M:%S)   "INFO   Suppression des images existantes (stop les containers si besoin)"
-				for img in $dockerImages; do
-					# si un container a ete lancer depuis une image, on l'arrete et delete le container
-					if [ $(docker ps -a -q --filter ancestor=$img --format="{{.ID}}"|wc -l) -ge 1 ]; then
-						docker rm $(docker stop $(docker ps -a -q --filter ancestor=pingouinfinihub/menhir --format="{{.ID}}"))
-					fi
-					
-					docker rmi $img
-				done
+				echo $(date +%H:%M:%S)   "INFO    Termine"
+				exit
+				;;&
 				
-				echo ""
-				echo $(date +%H:%M:%S)   "INFO   Pull des images depuis dockerhub"
-				for img in $dockerImages; do
-					:
-					docker pull $img
-				done
-				
-				echo ""
-				echo $(date +%H:%M:%S)   "INFO   Sauvegarde des images au format tar dans le répertoire $(pwd)/images"
-				for img in $dockerImages; do
-					# Set comma as delimiter & Read the split words into an array based on comma delimiter
-					delimiter="/"
-					string=$img$delimiter
-					
-					myarray=()
-					while [[ $string ]]; do
-					  myarray+=( "${string%%"$delimiter"*}" )
-					  string=${string#*"$delimiter"}
-					done
-					echo $(date +%H:%M:%S)   "DEBUG  Creation de $WORKING_DIR/images/${myarray[1]}.tar"
-					
-					docker save -o  $WORKING_DIR/images/${myarray[1]}.tar $img
-				done
-				
-				echo ""
-				echo $(date +%H:%M:%S)   "INFO   Preparation des $NBCONTAINERS container(s)"
-				
-				
-				 # Preparer les yml pour lancer $NBCONTAINERS
-				 # TODO
-				
-				
-				
-				cd $CURRENT_PATH
+			 *1-1*)
+				preparation_images
 				
 				echo ""
 				echo $(date +%H:%M:%S)   "INFO    Termine"
 				exit
 				;;&
-			 
+				
+			*1-2*)
+				NBCONTAINERS=$(whiptail --inputbox "Combien de containers seront instancies ?" 8 39 1 --title "Nb containers" 3>&1 1>&2 2>&3)
+					
+				preparation_container $NBCONTAINERS
+				echo ""
+				echo $(date +%H:%M:%S)   "INFO    Termine"
+				exit
+				;;&
 
 			 *02*)
-				  DOCKER_RELEASE=1.28.2
-				  echo "### Installation de Docker ..."
-				  install_docker $DOCKER_RELEASE
-				  echo "Terminé"
-				  echo "***************************************"
-				  echo $(docker --version)
-				  echo "***************************************"
-				  echo ""
-				  ;;&
-	esac
-	
-
-  PORTAPP=$(whiptail --inputbox "Sur quel port souhaitez-vous servir l'application ?" 8 39 18081 --title "App port" 3>&1 1>&2 2>&3)
-                                                                        # A trick to swap stdout and stderr.
-  # Again, you can pack this inside if, but it seems really long for some 80-col terminal users.
-  exitstatus=$?
-  if [ ! $exitstatus = 0 ]; then
-    exit
-  fi
-  
-  #echo "User selected Ok and entered " $PORTAPP
-  
-  (whiptail --title "Persistance" --yesno "Souhaitez-vous que les données de la base de données soient persistées? (conservées même si le container est éteint)" 8 78)
-  #PERSISTENCE = 0 = true
-  PERSISTENCE=$?.
-  echo "User selected Ok and entered " $PERSISTENCE
-  
+				load_images
+				stop_containers "pingouinfinihub/menhir pingouinfinihub/alesia postgres:12.3"
+				init_containers
+			 
+				echo ""
+				echo $(date +%H:%M:%S)   "INFO    Termine"
+				exit
+				;;&
+				
+			 *2-1*)
+				load_images
+				
+				echo ""
+				echo $(date +%H:%M:%S)   "INFO    Termine"
+				exit
+				;;&
+				
+			*2-2*)
+				stop_containers "pingouinfinihub/menhir pingouinfinihub/alesia postgres:12.3"
+				init_containers
+				
+				echo ""
+				echo $(date +%H:%M:%S)   "INFO    Termine"
+				exit
+				;;&
+				
+			*2-3*)
+				stop_containers "pingouinfinihub/menhir pingouinfinihub/alesia postgres:12.3"
+				
+				echo ""
+				echo $(date +%H:%M:%S)   "INFO    Termine"
+				exit
+				;;&
+	esac 
 }
 
 
