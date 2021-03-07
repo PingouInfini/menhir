@@ -79,6 +79,72 @@ case "$response" in
 esac
 }
 
+rebuild_images(){
+	check_if_package_installed git
+		
+	echo ""
+	echo $(date +%H:%M:%S)   "INFO   Build des images"
+	date=$(date +"%Y-%m-%d_%H-%M-%S")
+	mkdir -p /tmp/rebuild/$date
+	
+	HEIGHT=15
+	WIDTH=40
+	CHOICE_HEIGHT=4
+
+	TITLE="Image builder"
+	MENU="Choix des images à installer ('espace' pour faire un choix, 'entree' pour valider) :"
+
+	CHOIX=$(whiptail --title "$TITLE" --radiolist \
+	"$MENU" "$HEIGHT" "$WIDTH" "$CHOICE_HEIGHT" \
+	"00" "Aucune" ON \
+	"01" "Toutes" OFF \
+	"02" "Menhir" OFF \
+	"03" "Alesia" OFF \
+	3>&1 1>&2 2>&3)
+	
+	cd /tmp/rebuild/$date
+
+	case $CHOIX in
+		*00*)
+			echo $(date +%H:%M:%S)   "DEBUG  aucune image selectionnee"
+			;;&
+		*01*)
+			stop_containers "pingouinfinihub/menhir pingouinfinihub/alesia"
+			build_push_new_image menhir
+			build_push_new_image alesia
+			;;&
+		*02*)
+			stop_containers "pingouinfinihub/menhir"
+			build_push_new_image menhir
+			;;&
+		*03*)
+			stop_containers "pingouinfinihub/alesia"
+			build_push_new_image alesia
+			;;&
+	esac
+	
+	cd $CURRENT_PATH
+	rm -rf /tmp/rebuild/$date
+}
+
+build_push_new_image() {
+	app=$1
+	echo $(date +%H:%M:%S)   "DEBUG  build $app"
+	git clone https://github.com/PingouInfini/$app.git
+	cd $app
+	./mvnw -DskipTests -Pprod verify jib:dockerBuild
+	cd ..
+
+	echo ""
+	echo $(date +%H:%M:%S)   "DEBUG  push $app"
+
+	docker login --username pingouinfinihub -p '489eb399-fe2f-44af-80f4-a0c81acd71a5'
+	docker rmi pingouinfinihub/$app
+	docker tag $app pingouinfinihub/$app:latest
+	docker push pingouinfinihub/$app:latest
+	docker rmi $app
+}
+
 preparation_images(){
 	mkdir -p $WORKING_DIR/images
 	rm -rf $WORKING_DIR/images/*
@@ -243,7 +309,7 @@ launch_easy_install() {
 
 	HEIGHT=15
 	WIDTH=150
-	CHOICE_HEIGHT=7
+	CHOICE_HEIGHT=8
 
 	TITLE="Demo PESR easy deploy"
 	MENU="Choix de l action a realiser"
@@ -251,12 +317,13 @@ launch_easy_install() {
 	CHOIX=$(whiptail --title "$TITLE" --menu \
 	"$MENU" "$HEIGHT" "$WIDTH" "$CHOICE_HEIGHT" \
 	"01 Preparation" "     Recuperer les images docker depuis dockerhub et prepare les fichiers yml"  \
-	"  |_step_1-1" "     ...Recuperer les images docker "  \
-	"  |_step_1-2" "     ...Preparer les yml"  \
+	"  |_step_1-1" "     ...(optionnel) Rebuild/push les images docker"  \
+	"  |_step_1-2" "     ...Recuperer les images docker"  \
+	"  |_step_1-3" "     ...Preparer les yml"  \
 	"02 Installation" "     Load les images docker et instancie les containers"  \
-	"  |_step_2-1" "     ...Load les images docker "  \
+	"  |_step_2-1" "     ...Load les images docker"  \
 	"  |_step_2-2" "     ...Instancier les containers"  \
-	"  |_step_2-3" "     ...Stopper les containers"  \
+	"  |_step_2-3" "     ...(optionnel) Stopper les containers"  \
 	3>&1 1>&2 2>&3)
 
 	case $CHOIX in
@@ -272,6 +339,14 @@ launch_easy_install() {
 				;;&
 				
 			 *1-1*)
+				rebuild_images
+				
+				echo ""
+				echo $(date +%H:%M:%S)   "INFO    Termine"
+				exit
+				;;&
+				
+			 *1-2*)
 				preparation_images
 				
 				echo ""
@@ -279,7 +354,7 @@ launch_easy_install() {
 				exit
 				;;&
 				
-			*1-2*)
+			*1-3*)
 				NBCONTAINERS=$(whiptail --inputbox "Combien de containers seront instancies ?" 8 39 1 --title "Nb containers" 3>&1 1>&2 2>&3)
 					
 				preparation_container $NBCONTAINERS
@@ -289,8 +364,8 @@ launch_easy_install() {
 				;;&
 
 			 *02*)
-				load_images
 				stop_containers "pingouinfinihub/menhir pingouinfinihub/alesia postgres:12.3"
+				load_images
 				init_containers
 			 
 				echo ""
@@ -299,6 +374,7 @@ launch_easy_install() {
 				;;&
 				
 			 *2-1*)
+				stop_containers "pingouinfinihub/menhir pingouinfinihub/alesia postgres:12.3"
 				load_images
 				
 				echo ""
