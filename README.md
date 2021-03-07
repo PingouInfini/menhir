@@ -1,5 +1,13 @@
 # Menhir
 
+## Get script for easy setup
+
+```commandline
+cd <somewhere>
+curl -o easySetup.sh https://raw.githubusercontent.com/PingouInfini/Menhir/main/src/main/script/easySetup.sh
+chmod +x easySetup.sh
+```
+
 This application was generated using JHipster 6.10.5, you can find documentation and help at [https://www.jhipster.tech/documentation-archive/v6.10.5](https://www.jhipster.tech/documentation-archive/v6.10.5).
 
 ## Development
