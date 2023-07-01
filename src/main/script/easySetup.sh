@@ -187,7 +187,7 @@ services:
   menhir-postgresql:
     image: postgres:12.3
     #volumes:
-    #  - ~/volumes/jhipster/Menhir/postgresql/:/var/lib/postgresql/data/
+    #  - ~/volumes/jhipster/menhir/postgresql/:/var/lib/postgresql/data/
     environment:
       - POSTGRES_USER=Menhir
       - POSTGRES_PASSWORD=
@@ -200,7 +200,7 @@ services:
   alesia-postgresql:
     image: postgres:12.3
     #volumes:
-    #  - ~/volumes/jhipster/Alesia/postgresql/:/var/lib/postgresql/data/
+    #  - ~/volumes/jhipster/alesia/postgresql/:/var/lib/postgresql/data/
     environment:
       - POSTGRES_USER=Alesia
       - POSTGRES_PASSWORD=

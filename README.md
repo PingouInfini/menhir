@@ -4,7 +4,7 @@
 
 ```commandline
 cd <somewhere>
-curl -o easySetup.sh https://raw.githubusercontent.com/PingouInfini/Menhir/main/src/main/script/easySetup.sh
+curl -o easySetup.sh https://raw.githubusercontent.com/PingouInfini/menhir/main/src/main/script/easySetup.sh
 chmod +x easySetup.sh
 ```
 
